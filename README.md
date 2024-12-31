@@ -1,9 +1,13 @@
 # Ainex_Kakip
-## 1. Architectural Diagram 
+## 1. Overview  
+
+The Renesas RZV2H chip on the Kakip board powers this entire demo. It consists of a main arm A55 processor with an AI accelerator called DRPAI which is utilized in this demo. The AINEX robot is controlled using the A55 core thorough its GPIO pins using the UART protocol. A camera input is taken frame by frame and is processed on the DRPAI accelerator using a yoloc3 detector for detecting the hand gestures. Based on the gesture detected, the corresponding action is executed from the A55 core to the motor controller. 
+
+## 2. Architectural Diagram 
 ![alt text](assets/Aimage.png)
 
 
-## 2. Hardware Setup
+## 3. Hardware Setup
 1. Begin by setting up the Robot as required.
 
 ![alt text](assets/imageR.png)
@@ -46,30 +50,9 @@
     ![alt text](assets/image-6.png)
 
 
+## 4.Getting started with Kakip board
 
-
-
-
-
-
-
-
-
-## 3.Getting started with Kakip board
-To get started move into the required path to clone the repositary from the following link:
-
-https://gitlab.ignitarium.in/ign-ai/customer/renesas/AiNex_Humanoid/Ainex_Kakip
-
-Commands :
-
-```bash
-git clone git@gitlab.ignitarium.in:ign-ai/customer/renesas/AiNex_Humanoid/Ainex_Kakip.git
-```
-
-
-
-
-### 3.1 Preparing SD Card: 
+### 4.1 Preparing SD Card: 
 1.  Format the SD card using Gparted. 
 
     ```bash
@@ -91,7 +74,7 @@ git clone git@gitlab.ignitarium.in:ign-ai/customer/renesas/AiNex_Humanoid/Ainex_
 3. Click on tick mark for apply all operation → Apply
 
 
-### 3.2 Flashing Ubuntu 24.04 on the SD card 
+### 4.2 Flashing Ubuntu 24.04 on the SD card 
 1. Download the ubuntu image from the following link, 
 
     https://amatama-my.sharepoint.com/:f:/g/personal/yuichi_horiuchi_amatama_onmicrosoft_com/ElrlDdJrIFBJsiOFYSBqh-4B9v1bY4-kuGneQeIGQxSdCw?e=7mWfvf 
@@ -101,22 +84,23 @@ git clone git@gitlab.ignitarium.in:ign-ai/customer/renesas/AiNex_Humanoid/Ainex_
     ![alt text](assets/Scr.png)
 
 
-### 3.3 Update the Linux Kernel
+### 4.3 Update the Linux Kernel
 
 Steps for setting up, applying patches, running the application, and building it 
 
-#### 3.3.1. Build Environment (Same for application building) 
+#### 4.3.1. Build Environment (Same for application building) 
 
 Create a container image of the AI SDK for RZ/V2H refering [Renesas procedure](https://renesas-rz.github.io/rzv_ai_sdk/5.00/getting_started.html).
 
 Follow the below steps for creating container image:
 
-##### 3.3.1.a Pre-requistes
+##### 4.3.1.a Pre-requistes
 
 1. Install Docker 
 
-##### 3..3.1.b Setting up build environment for Kakip Kernel Development
+##### 4..3.1.b Setting up build environment for Kakip Kernel Development
 1. Download AI SDK from the [link](https://www.renesas.com/document/sws/rzv2h-ai-sdk-v500)
+
      Extract RZ/V AI SDK package
 2. On your Linux PC, make the working directory.
 ```bash
@@ -163,13 +147,12 @@ sudo docker run --name kakip_env -it -v $PWD:/kakip_linux -w /kakip_linux rzv2h_
 ```
 
 
-#### 3.3.2 Build Instructions
+#### 4.3.2 Build Instructions
 
 
-1. Cloning a Repository
+1. In new terminal list docker
 
 ```bash
-#in new terminal list docker
 sudo docker ps -a
 ```
 start docker
@@ -183,7 +166,12 @@ apt update
 apt install nano
 ```
 
-Clone the git repository 
+if you want to delete the folder 
+```bash
+sudo docker exec -ti 00020d9a098b rm -rf /home/kakip_linux 
+```
+ 
+Clone the kakip_linux repository   
 ```bash
 cd home
 git clone https://github.com/Kakip-ai/kakip_linux
@@ -222,24 +210,18 @@ In line number 231 & 232, do the following edits
 #};
 ```
 
-```
+```bash
 source /opt/poky/3.1.31/environment-setup-aarch64-poky-linux
 apt update && apt install -y flex bison bc
 ```
-
-```
-# #for pin mapping and functionalities
-# nano r9a09g057.dtsi
-
-# # okay for i2c7 
-```
-
 
 
 5. Build
 
 Go back to kakip_linux folder
 ```bash
+cd /home/kakip_linux 
+
 make -j4 Image
 make -j4 renesas/kakip-es1.dtb
 ```
@@ -279,7 +261,7 @@ sudo docker cp kakip_env:/kakip_linux/kakip_linux/arch/arm64/boot/dts/renesas/r9
 
 
 
-#### 3.3.4. For the first bootup of Kakip via serial/ssh  
+#### 4.3.4. For the first bootup of Kakip via serial/ssh  
 
 1. Connect the ethernet 
 
@@ -303,19 +285,19 @@ sudo docker cp kakip_env:/kakip_linux/kakip_linux/arch/arm64/boot/dts/renesas/r9
 
 7. Open new terminal and ssh into the board using the following command 
 
-```bash
-ssh ubuntu@<ip_address>  
-```
+    ```bash
+    ssh ubuntu@<ip_address>  
+    ```
  
 
 8. Change locale:
     Change the locale in the following path:
     ```bash
-        nano /etc/default/locale
+    nano /etc/default/locale
 
-        #in the opening window
-        LANG=en_US.UTF-8
-        LANGUAGE=en_US:en
+    #in the opening window
+    LANG=en_US.UTF-8
+    LANGUAGE=en_US:en
     ```
     
     ```bash
@@ -328,15 +310,12 @@ ssh ubuntu@<ip_address>
 
 
  
-## 4. Porting Hand gesture recognition on Kakip Board  
+## 5. Hand gesture recognition demo in Kakip Board 
 
 This application showcases the capability of deep neural networks to predict different hand gestures. It detects total of 8 Gestures that includes one, two, three, four, five, thumbs up, thumbs down and rock in the hand with the highest precision.  
-1. [Porting the application by setting up Docker](#docker-environment-for-compiling-the-application)
-2. [Verifying the application using the existing binary files](#generating-the-binary-file)
 
- 
 
-### 4.1 Docker environment for compiling the application  
+### 5.1 Docker environment for compiling the application  
 
 #### Step 1: Clone the Repository in Linux PC 
 
@@ -349,43 +328,57 @@ export WORK=/home/kakip_linux/
 
 cd ${WORK} 
 
-git clone https://github.com/Ignitarium-Renesas/rzv_ai_apps.git 
+git clone https://github.com/Ignitarium-Renesas/Kakip_Humanoid.git
 ```
 
-#### Step 2: Copy the A55 GPIO code and patch file into the working directory 
+Note: 
 
-Download and unzip the folder AINEX_Patch provide from the folder Source code and copy into the working repository 
+In future, to edit the port or socket address file, follow the below steps for:  
+
+1. For changing the port and IP address in hand_gesture_recognition.cpp 
 
 ```bash
-cd /home/kakip_linux 
+cd ${WORK}/Kakip_Humanoid/Hand_gesture/Gesture_Recognition/src 
 
-mv hand_gesture.patch rzv_ai_apps/ 
-``` 
-
-#### Step 3: Apply the Patch File for making it portable for Kakip
-
-To apply the patch file, follow the below command: 
-
-1. Navigate into the working repository 
-
-```bash 
-cd ${PROJECT_PATH}/rzv_ai_apps/11_Head_count_topview/ 
-```
-
-2. Apply patch 
-
-```bash
-git apply ../../Kakip_RZV2H_Demos/Head_count_topview/Head_count_topview.patch 
-```
-
-#### Step 4: Navigate to the Application Directory 
-
-Move to the source code directory of the application: 
-```bash 
-cd ${WORK}/rzv_ai_apps/12_Hand_gesture_recognition_v2/src 
+nano hand_gesture_recognition.cpp 
 ```
  
-#### Step 5: Build the Application 
+
+change line no: 55, with the correct PORT address 
+
+```
+/* DRP-AI TVM[*1] Runtime object */ 
+
+MeraDrpRuntimeWrapper runtime; 
+
+#define PORT 9091 
+
+int sock = 0; 
+```
+
+change ip address in line no: 964, with the correct PORT address 
+```
+if (inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr) <= 0) { 
+
+printf("\nInvalid address/ Address not supported \n"); 
+
+return -1; 
+
+} 
+```
+ 
+
+2. Similarly, the same Port and IP address should be used in socket_gesture.py 
+```
+${WORK}/Kakip_Humanoid/Hand_gesture/A55_GPIO 
+
+nano socket_gesture.py 
+```
+change in line no: 4 
+```
+def start_server(host='127.0.0.1', port=9091): 
+```
+#### Step 2: Build the Application 
 
 Build the application by following the commands below. 
 
@@ -397,12 +390,12 @@ cmake -DCMAKE_TOOLCHAIN_FILE=./toolchain/runtime.cmake -DV2H=ON ..
 make -j$(nproc) 
 ```
 
-#### Step 6: Locate the Generated Application 
+#### Step 3: Locate the Generated Application 
 
 The built application file will be available in the following directory: 
 
 ```bash
-${PROJECT_PATH}/12_Hand_gesture_recognition_v2/src/build 
+${WORK}/Kakip_Humanoid/Hand_gesture/Gesture_Recognition/src/build  
 ```
 
 The generated file will be named: 
@@ -411,67 +404,39 @@ The generated file will be named:
 hand_gesture_recognition_v2_app 
 ```
 
-#### Step 7: Application: Deploy Stage 
+#### Step 4: Application: Deploy Stage 
 
 Follow the steps below to deploy the project on board.  
 
-Run the commands below to download the 12_Hand_gesture_recognition_v2_deploy_tvm-v230.so from Release v5.00 
+Run the commands below to download deploy_tvm-v230.so from Release v5.00 
 
 ```bash
-cd ${PROJECT_PATH}/12_Hand_gesture_recognition_v2/exe_v2h/hand_yolov3_onnx 
+cd ${WORK}/Kakip_Humanoid/Hand_gesture/Gesture_Recognition/exe_v2h/hand_yolov3_onnx  
 ```
 
 ```bash
 wget https://github.com/Ignitarium-Renesas/rzv_ai_apps/releases/download/v5.00/12_Hand_gesture_recognition_v2_deploy_tvm-v230.so 
 ```
 
-Rename the 12_Hand_gesture_recognition_v2_deploy_tvm-v230.so to deploy.so. 
+Rename the Hand_gesture_recognition_v2_deploy_tvm-v230.so to deploy.so. 
 
 ```bash
-mv 12_Hand_gesture_recognition_v2_deploy_tvm-v230.so deploy.so 
+mv Hand_gesture_recognition_v2_deploy_tvm-v230.so deploy.so 
 ```
 
 Follow the steps in session [Running the application](#running-the-application) 
 
-### 4.2 Generating the binary file 
+### 5.2 GCopy the binary file and source code to Kakip 
 
-#### Step 1 : Copy the existing binary file
-
-Follow the below commands to copy the existing binary file to renesas application
-
-Navigate in to the below path before copying the executable:
-```bash
-rzv_ai_apps/12_Hand_gesture_recognition_v2/src 
-```
-
-```bash
-sudo cp -r ../../Kakip_RZV2H_Demos/Hand_gesture/hand_gesture_recognition_v2_app exe_v2h 
-
-cd .. 
-
-scp -r 12_Hand_gesture_recognition_vz ubuntu@192.168.38.<ip>:/home/ubuntu 
-```  
-
-Once copied the required files into the board using scp, ssh into the board, and in the terminal there, give the following comments 
-
-#### Step 2: Application: Deploy Stage 
-
-Follow the steps in [Application: Deploy Stage ](#step-8-application-deploy-stage) to deploy the project on board.  
-
-
-### 4.3 Running the application
-
-Alternately for running the code instead of session 4.2, unzip the source code, provided in the folder Hand_gesture and copy it into Kakip using the below commands: 
+Copy the source code into kaki board 
 
 In your Linux PC: 
-
-```bash
-unzip Hand_gesture.zip  
-
-sudo scp -rf Hand_gesture ubuntu@<ip>:/home/ubuntu/ 
 ```
+sudo scp -r ${WORK}/Kakip_Humanoid ubuntu@<ip>:/home/ubuntu/ 
+```
+### 5.3 Running the application
 
-#### 4.3.1 Prerequisite to run the application in Kakip 
+#### 5.3.1 Prerequisite to run the application in Kakip 
 
 Follow the below commands before running the application in kakip 
 
@@ -489,14 +454,14 @@ ldconfig -p | grep libpcre
 sudo ln -s /usr/lib/aarch64-linux-gnu/libpcre.so.3 /usr/lib/aarch64-linux-gnu/libpcre.so.1 
 ```
 
-#### 4.3.2. Executing the application 
+#### 5.3.2. Executing the application 
 
 Follow the commands below for running the application. 
 
-##### Step 1: Navigate into the working repository 
-
-Use cd to get into the working repository  
-
+##### Step 1: Copy the lib_tvm file 
+```bash
+cd /home/ubuntu/Kakip_Humanoid/libtvm_runtime.so /usr/lib64 
+```
 ##### Step 2: Run the motor control code for Humanoid Robot 
 
 ```bash
@@ -515,10 +480,6 @@ cd Hand_gesture/Hand_Gesture_Recognition/exe_v2h
 #### Output Frame:
 
 ![alt text](assets/oimage.png)
-
-For more detailed instruction check :
-https://ignitariumtech-my.sharepoint.com/:w:/g/personal/irine_jose_ignitarium_com/ESTSA92R3VlCmNKUS4DS6MIBm5TY0YBs382Q5Jsnw7rOPw?e=DHeoMG
-  
 
 ## Reference 
 
