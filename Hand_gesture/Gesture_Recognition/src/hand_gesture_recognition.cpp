@@ -52,7 +52,7 @@ using namespace cv;
 
 /* DRP-AI TVM[*1] Runtime object */
 MeraDrpRuntimeWrapper runtime;
-#define PORT 9090
+#define PORT 9091
 int sock = 0;
 
 /*Global Variables*/
@@ -950,18 +950,7 @@ main_proc_end:
 
 int main(int argc, char *argv[])
 {
-/*
-    clientSocket = socket(AF_INET, SOCK_STREAM, 0);
 
-    // specifying address
-    sockaddr_in serverAddress;
-    serverAddress.sin_family = AF_INET;
-    serverAddress.sin_port = htons(8080);
-    serverAddress.sin_addr.s_addr = inet_addr("192.168.0.48");
-
-    // sending connection request
-    connect(clientSocket, (struct sockaddr*)&serverAddress,sizeof(serverAddress));
-  */
     struct sockaddr_in serv_addr;
     if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
     printf("\n Socket creation error \n");
