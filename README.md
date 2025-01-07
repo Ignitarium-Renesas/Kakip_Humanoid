@@ -74,19 +74,48 @@ The Renesas RZV2H chip on the Kakip board powers this entire demo. It consists o
 3. Click on tick mark for apply all operation → Apply
 
 
-### 4.2 Flashing Ubuntu 24.04 on the SD card 
-1. Download the ubuntu image from the following link, 
+### 4.2 Flashing Image on SD Card.
 
-    https://amatama-my.sharepoint.com/:f:/g/personal/yuichi_horiuchi_amatama_onmicrosoft_com/ElrlDdJrIFBJsiOFYSBqh-4B9v1bY4-kuGneQeIGQxSdCw?e=7mWfvf 
+There are 2 methods:
+1. Downloading the Image file given which have the demo inbuilt in it, flash it and run it following the steps below:
+    i.   Download the given image file of sd card - [Handgesture_out.img.xz](https://ignitariumtech-my.sharepoint.com/:f:/g/personal/irine_jose_ignitarium_com/ErmMOJcEKytBkvrMynI04mEBw6d_aa1i4WUL-xO-m1kSFg?e=SZc5Vk)
+    
+    ii.  Unzip the image
 
-2. Flash the ubuntu image into SD Card from the following link using Balena etcher or using Ubuntu writer as shown below : 
+    ```bash
+    xz -d out.img.xz
+    ```
+    
+    iii. Write the downloaded Image to a device
+    ```bash
+    sudo dd if=out.img of=/dev/sdX bs=4M status=progress
+    ```
+
+    ```
+    if=out.img: Input file
+    of=/dev/sdX: Output device (replace sdX with your actual device name)
+    bs=4M: Block size
+    status=progress: Show progress
+    ```
+    
+    iv. Now unmount the SD card from PC and mount it in Kakip board. 
+    
+    v.  Follow the steps in Section [5.3 Running the application](#53-running-the-application), for running the application
+
+2. Else to develope from scratch, follow the steps to start with flashing the Ubuntu 24.04 Image on the SD card,
+
+    i.  Download the ubuntu image from the following link, 
+
+        https://amatama-my.sharepoint.com/:f:/g/personal/yuichi_horiuchi_amatama_onmicrosoft_com/ElrlDdJrIFBJsiOFYSBqh-4B9v1bY4-kuGneQeIGQxSdCw?e=7mWfvf 
+
+    ii. Flash the ubuntu image into SD Card from the following link using Balena etcher or using Ubuntu writer as shown below : 
 
     ![alt text](assets/Scr.png)
 
 
 ### 4.3 Update the Linux Kernel
 
-Steps for setting up, applying patches, running the application, and building it 
+Steps for setting up, applying patches, running the application, and building it, 
 
 #### 4.3.1. Build Environment (Same for application building) 
 
@@ -314,7 +343,6 @@ sudo docker cp kakip_env:/kakip_linux/kakip_linux/arch/arm64/boot/dts/renesas/r9
 
 This application showcases the capability of deep neural networks to predict different hand gestures. It detects total of 8 Gestures that includes one, two, three, four, five, thumbs up, thumbs down and rock in the hand with the highest precision.  
 
-
 ### 5.1 Docker environment for compiling the application  
 
 #### Step 1: Clone the Repository in Linux PC 
@@ -467,7 +495,7 @@ cd /home/ubuntu/Kakip_Humanoid/libtvm_runtime.so /usr/lib64
 ```bash
 cd Hand_gesture/A55_GPIO 
 
-python3 socket_control.py 
+python3 socket_gesture.py 
 ```
 
 ##### Step 3: Run Hand gesture demo code 
