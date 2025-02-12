@@ -454,7 +454,7 @@ mv Hand_gesture_recognition_v2_deploy_tvm-v230.so deploy.so
 
 Follow the steps in session [Running the application](#running-the-application) 
 
-### 5.2 GCopy the binary file and source code to Kakip 
+### 5.2 Copy the binary file and source code to Kakip 
 
 Copy the source code into kaki board 
 
@@ -482,7 +482,9 @@ ldconfig -p | grep libpcre
 sudo ln -s /usr/lib/aarch64-linux-gnu/libpcre.so.3 /usr/lib/aarch64-linux-gnu/libpcre.so.1 
 ```
 
-#### 5.3.2. Executing the application 
+To execute the application using CR8 follow section : [Execution using CR8](#6-enabling-cr8-through-uboot)
+
+#### 5.3.2. Executing the application using A55
 
 Follow the commands below for running the application. 
 
@@ -508,6 +510,159 @@ cd Hand_gesture/Hand_Gesture_Recognition/exe_v2h
 #### Output Frame:
 
 ![alt text](assets/oimage.png)
+
+### 6. Enabling cr8 through uboot
+
+Keep the Kakip's DIP switches as below: 
+
+```
+1 & 2 - ON 
+
+3 & 4 - OFF 
+```
+
+Follow the below steps for enabling cr8 through uboot:
+
+1. Install E2studio as per the section [e2 studio installation](#e2-studio-setup)
+2. Load the e2 studio project file and build all
+3. Copy and paste the following bin files inside the debug folder into root/boot of sd card
+```bash
+sudo cp rzv2h_cr8_rpmsg_demo_sdram.bin /media/<usr>/root/boot
+sudo cp rzv2h_cr8_rpmsg_demo_itcm.bin /media/<usr>/root/boot
+sudo cp rzv2h_cr8_rpmsg_demo_sram.bin /media/<usr>/root/boot
+```
+4. Reboot kakipi and log on to uboot
+```
+Press any key when asked to stop auto boot
+```
+5. Starting the CR8 program
+```bash
+=> setenv cr8start 'dcache off; mw.l 0x10420D24 0x04000000; mw.l 0x10420600 0xE000E000; mw.l 0x10420604 0x00030003; mw.l 0x10420908 0x1FFF0000; mw.l 0x10420C44 0x003F0000; mw.l 0x10420C14 0x00000000; mw.l 0x10420908 0x10001000; mw.l 0x10420C48 0x00000020; mw.l 0x10420908 0x1FFF1FFF; mw.l 0x10420C48 0x00000000; ext4load mmc 0:2 0x12040000 boot/rzv2h_cr8_rpmsg_demo_itcm.bin; ext4load mmc 0:2 0x08180000 boot/rzv2h_cr8_rpmsg_demo_sram.bin; ext4load mmc 0:2 0x40800000 boot/rzv2h_cr8_rpmsg_demo_sdram.bin; mw.l 0x10420C14 0x00000003; dcache on;'
+
+=> saveenv
+
+=> run cr8start
+``` 
+
+After starting the CR8 program, boot into Linux.
+
+```bash
+=> run bootcmd
+```
+
+6. Run the motor control code for Humanoid Robot 
+
+run scoket server with rp msg 
+```bash
+sudo ./rpmsg_sample_client  
+```
+
+7. Run Hand gesture demo code 
+```bash
+cd Hand_gesture/Gesture_Recognition/exe_v2h 
+./hand_gesture_kakip USB 
+``` 
+
+
+### 7. E2 studio Setup 
+
+Download the software from the below link Development environment setup  
+
+```
+Note: 
+
+For windows: setup_e2_studio_2024-01_1.exe 
+For Linux: e2studio_installer-2024-01_1.Linux_host.run 
+```
+
+#### Step 1 
+
+change the Install Location and specify where to install e2studio. 
+
+ ![alt text](assets/s1.png)
+
+#### Step 2 
+
+select GNU ARM Embedded 12.2-Rel1. 
+
+  ![alt text](assets/s2.png)
+
+#### Step 3 
+
+select FSP. 
+
+  ![alt text](assets/s3.png)
+
+##@# Step 4 
+
+select GNU ARM Embedded 12.2-Rel1 
+
+  ![alt text](assets/s4.png)
+
+#### Step 5 
+
+select GNU ARM Embedded 12.2-Rel1 
+
+ ![alt text](assets/s5.png)
+ 
+
+#### Step 6 
+
+Download the FSP Package from the below link or from assets [RZ_FSP](https://ignitariumtech-my.sharepoint.com/personal/benson_k_ignitarium_com/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Fbenson%5Fk%5Fignitarium%5Fcom%2FDocuments%2FGit%20hub%20Don%27t%20delete%2FAinex%2Fasset%2FE2studio%5Finstaller%2FRZV%5FFSP%5FPacks%5Fv2%2E0%2E0%2Drc%2E0%2B20240321%2Efd15d6da%2Ezip&parent=%2Fpersonal%2Fbenson%5Fk%5Fignitarium%5Fcom%2FDocuments%2FGit%20hub%20Don%27t%20delete%2FAinex%2Fasset%2FE2studio%5Finstaller&ga=1)
+
+ ![alt text](assets/s6.png) 
+
+After installation copy rz_fsp folder into the projectgen location which is located in E2 studio installation folder 
+
+#### Step 7 
+
+click Help > CMSIS Packs Management > Renesas RZ/V If FSP Packs is successfully installed it will shows here 
+
+  ![alt text](assets/s7.png)
+
+#### Step 8 
+
+Download the zip file and Load into e2 studio [zv2h_cm33_rpmsg_demo and rzv2h_cr8_rpmsg_demo](https://ignitariumtech-my.sharepoint.com/personal/benson_k_ignitarium_com/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Fbenson%5Fk%5Fignitarium%5Fcom%2FDocuments%2FGit%20hub%20Don%27t%20delete%2FAinex%2Fasset%2FE2studio%5Finstaller%2Frzv2h%5Fdemo%5Fe2%5Fstudio%5Ffiles%2Ezip&parent=%2Fpersonal%2Fbenson%5Fk%5Fignitarium%5Fcom%2FDocuments%2FGit%20hub%20Don%27t%20delete%2FAinex%2Fasset%2FE2studio%5Finstaller&ga=1)
+
+ ![alt text](assets/s8.png)
+
+
+click Project > Build All 
+
+#### Step 9 
+
+Installation of [J-link Software](https://www.segger.com/downloads/jlink/)
+
+ ![alt text](assets/s9.png)
+ 
+download and install the software 
+
+#### Step 10 
+
+Installation of Python 3.10 
+
+```bash
+sudo apt update 
+sudo apt install python3.10 
+sudo add-apt-repository ppa:deadsnakes/ppa 
+sudo apt update 
+sudo apt install python3.10 
+python3.10 --version  
+```
+
+#### Step 11 
+
+turn on the RZV2H 
+
+  ![alt text](assets/s11.png)
+
+flash the code with button 
+
+#### Step 12 
+
+run the code with Resume button 
+
+ ![alt text](assets/s12.png)
 
 ## Reference 
 
